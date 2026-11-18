@@ -1,4 +1,101 @@
-Solar-Calculator
-Panel Watts: input type equals number
-Battery Capacity: input type equals " number > "
-Button calculate Button
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solar Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .calculator-card {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        #result {
+            margin-top: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="calculator-card">
+        <h2>Solar Calculator</h2>
+        
+        <div class="input-group">
+            <label for="panelWatts">Solar Panel Watts</label>
+            <input type="number" id="panelWatts" placeholder="e.g. 300">
+        </div>
+
+        <div class="input-group">
+            <label for="batteryCapacity">Battery Capacity (Wh)</label>
+            <input type="number" id="batteryCapacity" placeholder="e.g. 1000">
+        </div>
+
+        <button id="calculateBtn">Calculate</button>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        document.getElementById('calculateBtn').addEventListener('click', function() {
+            const watts = parseFloat(document.getElementById('panelWatts').value) || 0;
+            const battery = parseFloat(document.getElementById('batteryCapacity').value) || 0;
+            
+            const resultDiv = document.getElementById('result');
+            if (watts > 0 && battery > 0) {
+                resultDiv.innerText = `System ready: ${watts}W panels paired with ${battery}Wh battery.`;
+            } else {
+                resultDiv.innerText = 'Please enter valid numbers for both fields.';
+            }
+        });
+    </script>
+
+</body>
+</html>
