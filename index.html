@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+9<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -107,4 +107,350 @@
     }
   </script>
 </body>
-</html>
+</html> <!-- Solar & Appliance Runtime Calculator Widget -->
+<div id="solar-calc-widget">
+  <style>
+    #solar-calc-widget {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      max-width: 720px;
+      margin: 20px auto;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      color: #1e293b;
+      overflow: hidden;
+    }
+    .sc-header {
+      background: #0f172a;
+      color: #ffffff;
+      padding: 20px 24px;
+    }
+    .sc-header h2 {
+      margin: 0 0 6px 0;
+      font-size: 1.35rem;
+    }
+    .sc-header p {
+      margin: 0;
+      font-size: 0.9rem;
+      color: #94a3b8;
+    }
+    .sc-tabs {
+      display: flex;
+      background: #f1f5f9;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .sc-tab {
+      flex: 1;
+      padding: 12px;
+      text-align: center;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: #64748b;
+      transition: all 0.2s;
+    }
+    .sc-tab.active {
+      background: #ffffff;
+      color: #0284c7;
+      border-bottom: 3px solid #0284c7;
+    }
+    .sc-body {
+      padding: 24px;
+    }
+    .sc-section {
+      display: none;
+    }
+    .sc-section.active {
+      display: block;
+    }
+    .sc-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .sc-field label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #334155;
+    }
+    .sc-field input, .sc-field select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      box-sizing: border-box;
+    }
+    .sc-result-box {
+      background: #f0f9ff;
+      border: 1px solid #bae6fd;
+      border-radius: 8px;
+      padding: 18px;
+      margin-top: 16px;
+    }
+    .sc-result-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      text-align: center;
+    }
+    .sc-stat-val {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #0369a1;
+    }
+    .sc-stat-lbl {
+      font-size: 0.8rem;
+      color: #475569;
+      margin-top: 4px;
+    }
+    .sc-appliance-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr auto;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .sc-appliance-row input {
+      padding: 8px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .sc-btn {
+      background: #0284c7;
+      color: #fff;
+      border: none;
+      padding: 9px 14px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    .sc-btn:hover { background: #0369a1; }
+    .sc-btn-del {
+      background: #ef4444;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 11px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .sc-col-headers {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr auto;
+      gap: 8px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #64748b;
+      margin-bottom: 6px;
+    }
+    @media (max-width: 600px) {
+      .sc-appliance-row, .sc-col-headers {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+  </style>
+
+  <div class="sc-header">
+    <h2>Solar & Appliance Runtime Calculator</h2>
+    <p>Estimate battery backup duration and size your solar array</p>
+  </div>
+
+  <div class="sc-tabs">
+    <button class="sc-tab active" onclick="scSwitchTab('runtime', this)">1. Battery Run Time</button>
+    <button class="sc-tab" onclick="scSwitchTab('sizing', this)">2. Daily Load & Solar Sizing</button>
+  </div>
+
+  <div class="sc-body">
+    <!-- TAB 1: BATTERY RUNTIME CALCULATOR -->
+    <div id="sc-tab-runtime" class="sc-section active">
+      <div class="sc-grid">
+        <div class="sc-field">
+          <label>Battery Capacity (Wh)</label>
+          <input type="number" id="rt-wh" value="1000" min="1" oninput="calcRuntime()">
+        </div>
+        <div class="sc-field">
+          <label>Battery Chemistry (DoD)</label>
+          <select id="rt-dod" onchange="calcRuntime()">
+            <option value="0.90">LiFePO4 / Lithium (90% usable)</option>
+            <option value="0.80">Standard Lithium-Ion (80% usable)</option>
+            <option value="0.50">Lead-Acid / AGM (50% usable)</option>
+          </select>
+        </div>
+        <div class="sc-field">
+          <label>Appliance Preset</label>
+          <select id="rt-preset" onchange="applyPreset()">
+            <option value="">-- Custom Load --</option>
+            <option value="60">CPAP Machine (~60W)</option>
+            <option value="150">Full-Size Fridge Avg (~150W)</option>
+            <option value="65">Laptop & Wi-Fi Router (~65W)</option>
+            <option value="100">55" LED TV (~100W)</option>
+            <option value="1200">Microwave / Coffee Maker (~1200W)</option>
+            <option value="1500">Space Heater (~1500W)</option>
+          </select>
+        </div>
+        <div class="sc-field">
+          <label>Total Appliance Load (Watts)</label>
+          <input type="number" id="rt-watts" value="150" min="1" oninput="calcRuntime()">
+        </div>
+        <div class="sc-field">
+          <label>Inverter Efficiency (%)</label>
+          <input type="number" id="rt-eff" value="85" min="50" max="100" oninput="calcRuntime()">
+        </div>
+      </div>
+
+      <div class="sc-result-box">
+        <div class="sc-result-grid">
+          <div>
+            <div class="sc-stat-val" id="res-runtime">5h 6m</div>
+            <div class="sc-stat-lbl">Estimated Run Time</div>
+          </div>
+          <div>
+            <div class="sc-stat-val" id="res-usable">765 Wh</div>
+            <div class="sc-stat-lbl">Usable AC Energy</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: DAILY APPLIANCE LOAD & SOLAR SIZING -->
+    <div id="sc-tab-sizing" class="sc-section">
+      <div class="sc-col-headers">
+        <span>Appliance Name</span>
+        <span>Watts (W)</span>
+        <span>Qty</span>
+        <span>Hrs / Day</span>
+        <span></span>
+      </div>
+      <div id="sc-appliance-list"></div>
+      <button class="sc-btn" onclick="addApplianceRow()">+ Add Appliance</button>
+
+      <div class="sc-grid" style="margin-top: 20px;">
+        <div class="sc-field">
+          <label>Peak Sun Hours / Day</label>
+          <input type="number" id="sz-sun" value="4.5" step="0.5" min="1" oninput="calcSolarSizing()">
+        </div>
+        <div class="sc-field">
+          <label>Days of Backup (Autonomy)</label>
+          <input type="number" id="sz-days" value="1" min="1" oninput="calcSolarSizing()">
+        </div>
+        <div class="sc-field">
+          <label>System Losses (%)</label>
+          <input type="number" id="sz-loss" value="20" min="0" max="50" oninput="calcSolarSizing()">
+        </div>
+      </div>
+
+      <div class="sc-result-box">
+        <div class="sc-result-grid">
+          <div>
+            <div class="sc-stat-val" id="res-daily-wh">0 Wh</div>
+            <div class="sc-stat-lbl">Daily Consumption</div>
+          </div>
+          <div>
+            <div class="sc-stat-val" id="res-panels">0 W</div>
+            <div class="sc-stat-lbl">Min. Solar Array Size</div>
+          </div>
+          <div>
+            <div class="sc-stat-val" id="res-battery">0 Wh</div>
+            <div class="sc-stat-lbl">Recommended LiFePO4 Battery</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function scSwitchTab(tab, btn) {
+      document.querySelectorAll('.sc-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.sc-section').forEach(s => s.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('sc-tab-' + tab).classList.add('active');
+    }
+
+    function applyPreset() {
+      const val = document.getElementById('rt-preset').value;
+      if (val) {
+        document.getElementById('rt-watts').value = val;
+        calcRuntime();
+      }
+    }
+
+    function calcRuntime() {
+      const capacity = parseFloat(document.getElementById('rt-wh').value) || 0;
+      const dod = parseFloat(document.getElementById('rt-dod').value) || 0.85;
+      const watts = parseFloat(document.getElementById('rt-watts').value) || 0;
+      const eff = (parseFloat(document.getElementById('rt-eff').value) || 85) / 100;
+
+      const usableWh = capacity * dod * eff;
+      document.getElementById('res-usable').textContent = Math.round(usableWh).toLocaleString() + ' Wh';
+
+      if (watts <= 0) {
+        document.getElementById('res-runtime').textContent = '0h 0m';
+        return;
+      }
+
+      const totalHours = usableWh / watts;
+      const hrs = Math.floor(totalHours);
+      const mins = Math.round((totalHours - hrs) * 60);
+      document.getElementById('res-runtime').textContent = `${hrs}h ${mins}m`;
+    }
+
+    const defaultAppliances = [
+      { name: 'Refrigerator (avg draw)', watts: 150, qty: 1, hours: 8 },
+      { name: 'LED Lights', watts: 10, qty: 4, hours: 5 },
+      { name: 'Wi-Fi & Laptop', watts: 65, qty: 1, hours: 6 }
+    ];
+
+    function addApplianceRow(name = '', watts = 100, qty = 1, hours = 2) {
+      const list = document.getElementById('sc-appliance-list');
+      const row = document.createElement('div');
+      row.className = 'sc-appliance-row';
+      row.innerHTML = `
+        <input type="text" placeholder="Appliance" value="${name}">
+        <input type="number" class="app-w" value="${watts}" min="0" oninput="calcSolarSizing()">
+        <input type="number" class="app-q" value="${qty}" min="1" oninput="calcSolarSizing()">
+        <input type="number" class="app-h" value="${hours}" min="0" step="0.5" oninput="calcSolarSizing()">
+        <button class="sc-btn-del" onclick="this.parentElement.remove(); calcSolarSizing();">×</button>
+      `;
+      list.appendChild(row);
+      calcSolarSizing();
+    }
+
+    function calcSolarSizing() {
+      let totalWh = 0;
+      document.querySelectorAll('.sc-appliance-row').forEach(row => {
+        const w = parseFloat(row.querySelector('.app-w').value) || 0;
+        const q = parseFloat(row.querySelector('.app-q').value) || 0;
+        const h = parseFloat(row.querySelector('.app-h').value) || 0;
+        totalWh += w * q * h;
+      });
+
+      const sunHours = parseFloat(document.getElementById('sz-sun').value) || 4.5;
+      const backupDays = parseFloat(document.getElementById('sz-days').value) || 1;
+      const lossFactor = 1 - ((parseFloat(document.getElementById('sz-loss').value) || 20) / 100);
+
+      const adjustedDailyWh = totalWh / (lossFactor > 0 ? lossFactor : 0.8);
+      const panelWatts = adjustedDailyWh / sunHours;
+      // Assumes 85% usable capacity on LiFePO4 battery
+      const batteryWh = (adjustedDailyWh * backupDays) / 0.85;
+
+      document.getElementById('res-daily-wh').textContent = Math.round(totalWh).toLocaleString() + ' Wh';
+      document.getElementById('res-panels').textContent = Math.ceil(panelWatts).toLocaleString() + ' W';
+      document.getElementById('res-battery').textContent = Math.ceil(batteryWh).toLocaleString() + ' Wh';
+    }
+
+    // Initialize defaults
+    calcRuntime();
+    defaultAppliances.forEach(a => addApplianceRow(a.name, a.watts, a.qty, a.hours));
+  </script>
+</div>
